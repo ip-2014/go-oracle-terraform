@@ -14,10 +14,11 @@ type ResourceClient struct {
 	*JavaClient
 	ContainerPath    string
 	ResourceRootPath string
+	ServiceInstance  string
 }
 
 func (c *ResourceClient) createResource(requestBody interface{}, responseBody interface{}) error {
-	_, err := c.executeRequest("POST", c.getContainerPath(c.ContainerPath), requestBody)
+	_, err := c.executeRequest("POST", c.getContainerPath(c.ContainerPath, c.ServiceInstance), requestBody)
 	if err != nil {
 		return err
 	}
@@ -26,7 +27,7 @@ func (c *ResourceClient) createResource(requestBody interface{}, responseBody in
 }
 
 func (c *ResourceClient) updateResource(name string, requestBody interface{}, responseBody interface{}) error {
-	_, err := c.executeRequest("PUT", c.getObjectPath(c.ResourceRootPath, name), requestBody)
+	_, err := c.executeRequest("PUT", c.getObjectPath(c.ResourceRootPath, c.ServiceInstance, name), requestBody)
 	if err != nil {
 		return err
 	}
@@ -37,7 +38,7 @@ func (c *ResourceClient) updateResource(name string, requestBody interface{}, re
 func (c *ResourceClient) getResource(name string, responseBody interface{}) error {
 	var objectPath string
 	if name != "" {
-		objectPath = c.getObjectPath(c.ResourceRootPath, name)
+		objectPath = c.getObjectPath(c.ResourceRootPath, c.ServiceInstance, name)
 	} else {
 		objectPath = c.ResourceRootPath
 	}
@@ -52,7 +53,7 @@ func (c *ResourceClient) getResource(name string, responseBody interface{}) erro
 func (c *ResourceClient) deleteResource(name string) error {
 	var objectPath string
 	if name != "" {
-		objectPath = c.getObjectPath(c.ResourceRootPath, name)
+		objectPath = c.getObjectPath(c.ResourceRootPath, c.ServiceInstance, name)
 	} else {
 		objectPath = c.ResourceRootPath
 	}
@@ -69,7 +70,7 @@ func (c *ResourceClient) deleteResource(name string) error {
 func (c *ResourceClient) deleteInstanceResource(name string, requestBody interface{}) error {
 	var objectPath string
 	if name != "" {
-		objectPath = c.getObjectPath(c.ResourceRootPath, name)
+		objectPath = c.getObjectPath(c.ResourceRootPath, "", name)
 	} else {
 		objectPath = c.ResourceRootPath
 	}

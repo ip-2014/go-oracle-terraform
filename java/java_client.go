@@ -56,10 +56,20 @@ func (c *JavaClient) executeRequest(method, path string, body interface{}) (*htt
 	return resp, nil
 }
 
-func (c *JavaClient) getContainerPath(root string) string {
-	return fmt.Sprintf(root, *c.client.IdentityDomain)
+// Each resource except service instance needs a service instance to attach to.
+// This is checking whether or not it's a service instance or not and creating the approriate path
+func (c *JavaClient) getContainerPath(root, serviceInstance string) string {
+	if serviceInstance == "" {
+		return fmt.Sprintf(root, *c.client.IdentityDomain)
+	}
+	return fmt.Sprintf(root, *c.client.IdentityDomain, serviceInstance)
 }
 
-func (c *JavaClient) getObjectPath(root, name string) string {
-	return fmt.Sprintf(root, *c.client.IdentityDomain, name)
+// Each resource except service instance needs a service instance to attach to.
+// This is checking whether or not it's a service instance or not and creating the approriate path
+func (c *JavaClient) getObjectPath(root, serviceInstance, name string) string {
+	if serviceInstance == "" {
+		return fmt.Sprintf(root, *c.client.IdentityDomain, name)
+	}
+	return fmt.Sprintf(root, *c.client.IdentityDomain, serviceInstance, name)
 }
