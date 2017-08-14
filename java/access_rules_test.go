@@ -15,7 +15,7 @@ const (
 	_AccessRuleDestination  = AccessRuleDestinationWL
 	_AccessRulePorts        = "8989"
 	_AccessRuleName         = "test-acc-access-rule-1"
-	_AccessRuleSource       = AccessRuleSourceWLSAdmin
+	_AccessRuleSource       = AccessRuleSourceWLSManaged
 	_AccessRuleStatus       = AccessRuleStatusEnabled
 	_AccessRuleUpdateStatus = AccessRuleStatusDisabled
 	_AccessRuleOperation    = AccessRuleOperationUpdate

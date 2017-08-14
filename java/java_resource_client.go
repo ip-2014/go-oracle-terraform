@@ -15,10 +15,11 @@ type ResourceClient struct {
 	ContainerPath    string
 	ResourceRootPath string
 	ServiceInstance  string
+	ContentType      string
 }
 
 func (c *ResourceClient) createResource(requestBody interface{}, responseBody interface{}) error {
-	_, err := c.executeRequest("POST", c.getContainerPath(c.ContainerPath, c.ServiceInstance), requestBody)
+	_, err := c.executeRequest("POST", c.getContainerPath(c.ContainerPath, c.ServiceInstance), c.ContentType, requestBody)
 	if err != nil {
 		return err
 	}
@@ -27,7 +28,7 @@ func (c *ResourceClient) createResource(requestBody interface{}, responseBody in
 }
 
 func (c *ResourceClient) updateResource(name string, requestBody interface{}, responseBody interface{}) error {
-	_, err := c.executeRequest("PUT", c.getObjectPath(c.ResourceRootPath, c.ServiceInstance, name), requestBody)
+	_, err := c.executeRequest("PUT", c.getObjectPath(c.ResourceRootPath, c.ServiceInstance, name), c.ContentType, requestBody)
 	if err != nil {
 		return err
 	}
@@ -40,9 +41,9 @@ func (c *ResourceClient) getResource(name string, responseBody interface{}) erro
 	if name != "" {
 		objectPath = c.getObjectPath(c.ResourceRootPath, c.ServiceInstance, name)
 	} else {
-		objectPath = c.ResourceRootPath
+		objectPath = c.getContainerPath(c.ContainerPath, c.ServiceInstance)
 	}
-	resp, err := c.executeRequest("GET", objectPath, nil)
+	resp, err := c.executeRequest("GET", objectPath, c.ContentType, nil)
 	if err != nil {
 		return err
 	}
@@ -57,7 +58,7 @@ func (c *ResourceClient) deleteResource(name string) error {
 	} else {
 		objectPath = c.ResourceRootPath
 	}
-	_, err := c.executeRequest("DELETE", objectPath, nil)
+	_, err := c.executeRequest("DELETE", objectPath, c.ContentType, nil)
 	if err != nil {
 		return err
 	}
@@ -74,7 +75,7 @@ func (c *ResourceClient) deleteInstanceResource(name string, requestBody interfa
 	} else {
 		objectPath = c.ResourceRootPath
 	}
-	_, err := c.executeRequest("PUT", objectPath, requestBody)
+	_, err := c.executeRequest("PUT", objectPath, c.ContentType, requestBody)
 	if err != nil {
 		return err
 	}

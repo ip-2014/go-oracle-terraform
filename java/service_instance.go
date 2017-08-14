@@ -14,6 +14,7 @@ const ServiceInstanceDeleteRetry = 30
 var (
 	ServiceInstanceContainerPath = "/paas/service/jcs/api/v1.1/instances/%s"
 	ServiceInstanceResourcePath  = "/paas/service/jcs/api/v1.1/instances/%s/%s"
+	ServiceInstanceContentType   = "application/vnd.com.oracle.oracloud.provisioning.Service+json"
 )
 
 // ServiceInstanceClient is a client for the Service functions of the Java API.
@@ -30,6 +31,7 @@ func (c *JavaClient) ServiceInstanceClient() *ServiceInstanceClient {
 			JavaClient:       c,
 			ContainerPath:    ServiceInstanceContainerPath,
 			ResourceRootPath: ServiceInstanceResourcePath,
+			ContentType:      ServiceInstanceContentType,
 		}}
 }
 

@@ -2,11 +2,14 @@ package java
 
 import (
 	"fmt"
+	"time"
 )
 
 const (
-	AccessRuleContainerPath = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances/%s/accessrules/"
+	AccessRuleContainerPath = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances/%s/accessrules"
 	AccessRuleResourcePath  = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances/%s/accessrules/%s"
+	AccessRuleContentType   = "application/json"
+	AccessRuleGetCount      = 5
 )
 
 // AccessRulesClient is a client for the AccessRules functions of the Compute API.
@@ -23,6 +26,7 @@ func (c *JavaClient) AccessRules(serviceInstance string) *AccessRulesClient {
 			ContainerPath:    AccessRuleContainerPath,
 			ResourceRootPath: AccessRuleResourcePath,
 			ServiceInstance:  serviceInstance,
+			ContentType:      AccessRuleContentType,
 		}}
 }
 
@@ -155,15 +159,23 @@ func (c *AccessRulesClient) GetAccessRule(getInput *GetAccessRuleInput) (*Access
 		accessRulesInfo AccessRulesInfo
 		accessRuleInfo  AccessRuleInfo
 	)
-	if err := c.getResource("", &accessRulesInfo); err != nil {
-		return nil, err
-	}
 
-	for _, accessRule := range accessRulesInfo.AccessRules {
-		if accessRule.Name == getInput.Name {
-			accessRuleInfo = accessRule
+	// Get Access Rules are eventually consitstent so we need to try multiple times to find the access rule we just created.
+	for i := 0; i < AccessRuleGetCount; i++ {
+		if err := c.getResource("", &accessRulesInfo); err != nil {
+			return nil, err
+		}
+
+		for _, accessRule := range accessRulesInfo.AccessRules {
+			if accessRule.Name == getInput.Name {
+				accessRuleInfo = accessRule
+				break
+			}
+		}
+		if accessRuleInfo.Name != "" {
 			break
 		}
+		time.Sleep(time.Second * 10)
 	}
 
 	if accessRuleInfo.Name == "" {
@@ -195,7 +207,11 @@ func (c *AccessRulesClient) UpdateAccessRule(updateInput *UpdateAccessRuleInput)
 		return nil, err
 	}
 
-	return &accessRuleInfo, nil
+	getInput := &GetAccessRuleInput{
+		Name: updateInput.Name,
+	}
+
+	return c.GetAccessRule(getInput)
 }
 
 type DeleteAccessRuleInput struct {
