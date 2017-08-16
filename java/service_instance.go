@@ -1199,7 +1199,7 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 }
 
 func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateServiceInstanceInput) (*ServiceInstance, error) {
-	if err := c.createResource(*input, nil); err != nil {
+	if err := c.createResource("", *input, nil); err != nil {
 		return nil, err
 	}
 
@@ -1262,7 +1262,7 @@ type GetServiceInstanceInput struct {
 // GetServiceInstance retrieves the SeriveInstance with the given name.
 func (c *ServiceInstanceClient) GetServiceInstance(getInput *GetServiceInstanceInput) (*ServiceInstance, error) {
 	var serviceInstance ServiceInstance
-	if err := c.getResource(getInput.Name, &serviceInstance); err != nil {
+	if err := c.getResource(getInput.Name, "", &serviceInstance); err != nil {
 		return nil, err
 	}
 

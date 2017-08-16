@@ -19,13 +19,12 @@ type AccessRulesClient struct {
 
 // AccessRules obtains a AccessRulesClient which can be used to access to the
 // AccessRules functions of the Compute API
-func (c *JavaClient) AccessRules(serviceInstance string) *AccessRulesClient {
+func (c *JavaClient) AccessRules() *AccessRulesClient {
 	return &AccessRulesClient{
 		ResourceClient: ResourceClient{
 			JavaClient:       c,
 			ContainerPath:    AccessRuleContainerPath,
 			ResourceRootPath: AccessRuleResourcePath,
-			ServiceInstance:  serviceInstance,
 			ContentType:      AccessRuleContentType,
 		}}
 }
@@ -119,6 +118,9 @@ type CreateAccessRuleInput struct {
 	// Name of the access rule
 	// Required
 	Name string `json:"ruleName"`
+	// Name of the Service Instance to add access rules to.
+	// Required.
+	ServiceInstance string `json:"-"`
 	// Network address of source. Specify the hosts from which traffic is allowed. Valid values include:
 	// PUBLIC-INTERNET for any host on the Internet
 	// A single IP address or a comma-separated list of subnets (in CIDR format) or IPv4 addresses
@@ -133,12 +135,13 @@ type CreateAccessRuleInput struct {
 // CreateAccessRule creates a new AccessRule.
 func (c *AccessRulesClient) CreateAccessRule(createInput *CreateAccessRuleInput) (*AccessRuleInfo, error) {
 	var accessRuleInfo AccessRuleInfo
-	if err := c.createResource(createInput, &accessRuleInfo); err != nil {
+	if err := c.createResource(createInput.ServiceInstance, createInput, &accessRuleInfo); err != nil {
 		return nil, err
 	}
 
 	getInput := &GetAccessRuleInput{
-		Name: createInput.Name,
+		Name:            createInput.Name,
+		ServiceInstance: createInput.ServiceInstance,
 	}
 
 	return c.GetAccessRule(getInput)
@@ -149,6 +152,9 @@ type GetAccessRuleInput struct {
 	// The name of the AccessRule to query for
 	// Required
 	Name string `json:"name"`
+	// Name of the Service Instance to get access rules from.
+	// Required.
+	ServiceInstance string `json:"-"`
 }
 
 // GetAccessRule retrieves the AccessRule with the given name.
@@ -162,7 +168,7 @@ func (c *AccessRulesClient) GetAccessRule(getInput *GetAccessRuleInput) (*Access
 
 	// Get Access Rules are eventually consitstent so we need to try multiple times to find the access rule we just created.
 	for i := 0; i < AccessRuleGetCount; i++ {
-		if err := c.getResource("", &accessRulesInfo); err != nil {
+		if err := c.getResource("", getInput.ServiceInstance, &accessRulesInfo); err != nil {
 			return nil, err
 		}
 
@@ -190,6 +196,8 @@ type UpdateAccessRuleInput struct {
 	// Name of the access rule to update
 	// Required
 	Name string `json:"-"`
+	// Name of the service instance
+	ServiceInstance string `json:"-"`
 	// Type of operation to perform on the access rule. Valid values are: update (to disable or enable a rule)
 	// and delete (to delete a rule).
 	// Required
@@ -203,12 +211,13 @@ type UpdateAccessRuleInput struct {
 // UpdateAccessRule modifies the properties of the AccessRule with the given name.
 func (c *AccessRulesClient) UpdateAccessRule(updateInput *UpdateAccessRuleInput) (*AccessRuleInfo, error) {
 	var accessRuleInfo AccessRuleInfo
-	if err := c.updateResource(updateInput.Name, updateInput, &accessRuleInfo); err != nil {
+	if err := c.updateResource(updateInput.Name, updateInput.ServiceInstance, updateInput, &accessRuleInfo); err != nil {
 		return nil, err
 	}
 
 	getInput := &GetAccessRuleInput{
-		Name: updateInput.Name,
+		Name:            updateInput.Name,
+		ServiceInstance: updateInput.ServiceInstance,
 	}
 
 	return c.GetAccessRule(getInput)
@@ -218,14 +227,17 @@ type DeleteAccessRuleInput struct {
 	// Name of the access rule to delete
 	// Required
 	Name string `json:"-"`
+	// Name of the service instance
+	ServiceInstance string `json:"-"`
 }
 
 func (c *AccessRulesClient) DeleteAccessRule(deleteInput *DeleteAccessRuleInput) error {
 	// The Oracle API does not have a DELETE call and so we must go through the UPDATE call
 	updateAccessRule := &UpdateAccessRuleInput{
-		Name:      deleteInput.Name,
-		Operation: AccessRuleOperationDelete,
-		Status:    AccessRuleStatusDisabled,
+		Name:            deleteInput.Name,
+		ServiceInstance: deleteInput.ServiceInstance,
+		Operation:       AccessRuleOperationDelete,
+		Status:          AccessRuleStatusDisabled,
 	}
 	_, err := c.UpdateAccessRule(updateAccessRule)
 	if err != nil {

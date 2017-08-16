@@ -84,12 +84,13 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
 
 	createAccessRule := &CreateAccessRuleInput{
-		Description: _AccessRuleDescription,
-		Destination: _AccessRuleDestination,
-		Ports:       _AccessRulePorts,
-		Name:        _AccessRuleName,
-		Source:      _AccessRuleSource,
-		Status:      _AccessRuleStatus,
+		Description:     _AccessRuleDescription,
+		Destination:     _AccessRuleDestination,
+		Ports:           _AccessRulePorts,
+		Name:            _AccessRuleName,
+		ServiceInstance: _ServiceInstanceName,
+		Source:          _AccessRuleSource,
+		Status:          _AccessRuleStatus,
 	}
 
 	createdAccessRule, err := arClient.CreateAccessRule(createAccessRule)
@@ -99,7 +100,8 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	defer destroyAccessRule(t, arClient, _AccessRuleName)
 
 	getAccessRuleInput := &GetAccessRuleInput{
-		Name: _AccessRuleName,
+		Name:            _AccessRuleName,
+		ServiceInstance: _ServiceInstanceName,
 	}
 	receivedAccessRule, err := arClient.GetAccessRule(getAccessRuleInput)
 	if err != nil {
@@ -111,9 +113,10 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	}
 
 	updateAccessRuleInput := &UpdateAccessRuleInput{
-		Name:      _AccessRuleName,
-		Operation: _AccessRuleOperation,
-		Status:    _AccessRuleUpdateStatus,
+		Name:            _AccessRuleName,
+		ServiceInstance: _ServiceInstanceName,
+		Operation:       _AccessRuleOperation,
+		Status:          _AccessRuleUpdateStatus,
 	}
 	updatedAccessRule, err := arClient.UpdateAccessRule(updateAccessRuleInput)
 	if err != nil {
@@ -141,12 +144,13 @@ func getAccessRuleTestClients() (*AccessRulesClient, *ServiceInstanceClient, *da
 		return &AccessRulesClient{}, &ServiceInstanceClient{}, &database.ServiceInstanceClient{}, err
 	}
 
-	return client.AccessRules(_ServiceInstanceName), client.ServiceInstanceClient(), dClient.ServiceInstanceClient(), nil
+	return client.AccessRules(), client.ServiceInstanceClient(), dClient.ServiceInstanceClient(), nil
 }
 
 func destroyAccessRule(t *testing.T, client *AccessRulesClient, name string) {
 	input := &DeleteAccessRuleInput{
-		Name: name,
+		Name:            name,
+		ServiceInstance: _ServiceInstanceName,
 	}
 
 	if err := client.DeleteAccessRule(input); err != nil {

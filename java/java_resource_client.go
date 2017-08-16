@@ -14,12 +14,11 @@ type ResourceClient struct {
 	*JavaClient
 	ContainerPath    string
 	ResourceRootPath string
-	ServiceInstance  string
 	ContentType      string
 }
 
-func (c *ResourceClient) createResource(requestBody interface{}, responseBody interface{}) error {
-	_, err := c.executeRequest("POST", c.getContainerPath(c.ContainerPath, c.ServiceInstance), c.ContentType, requestBody)
+func (c *ResourceClient) createResource(serviceInstance string, requestBody interface{}, responseBody interface{}) error {
+	_, err := c.executeRequest("POST", c.getContainerPath(c.ContainerPath, serviceInstance), c.ContentType, requestBody)
 	if err != nil {
 		return err
 	}
@@ -27,8 +26,8 @@ func (c *ResourceClient) createResource(requestBody interface{}, responseBody in
 	return nil
 }
 
-func (c *ResourceClient) updateResource(name string, requestBody interface{}, responseBody interface{}) error {
-	_, err := c.executeRequest("PUT", c.getObjectPath(c.ResourceRootPath, c.ServiceInstance, name), c.ContentType, requestBody)
+func (c *ResourceClient) updateResource(name string, serviceInstance string, requestBody interface{}, responseBody interface{}) error {
+	_, err := c.executeRequest("PUT", c.getObjectPath(c.ResourceRootPath, serviceInstance, name), c.ContentType, requestBody)
 	if err != nil {
 		return err
 	}
@@ -36,12 +35,12 @@ func (c *ResourceClient) updateResource(name string, requestBody interface{}, re
 	return nil
 }
 
-func (c *ResourceClient) getResource(name string, responseBody interface{}) error {
+func (c *ResourceClient) getResource(name string, serviceInstance string, responseBody interface{}) error {
 	var objectPath string
 	if name != "" {
-		objectPath = c.getObjectPath(c.ResourceRootPath, c.ServiceInstance, name)
+		objectPath = c.getObjectPath(c.ResourceRootPath, serviceInstance, name)
 	} else {
-		objectPath = c.getContainerPath(c.ContainerPath, c.ServiceInstance)
+		objectPath = c.getContainerPath(c.ContainerPath, serviceInstance)
 	}
 	resp, err := c.executeRequest("GET", objectPath, c.ContentType, nil)
 	if err != nil {
@@ -51,10 +50,10 @@ func (c *ResourceClient) getResource(name string, responseBody interface{}) erro
 	return c.unmarshalResponseBody(resp, responseBody)
 }
 
-func (c *ResourceClient) deleteResource(name string) error {
+func (c *ResourceClient) deleteResource(name, serviceInstance string) error {
 	var objectPath string
 	if name != "" {
-		objectPath = c.getObjectPath(c.ResourceRootPath, c.ServiceInstance, name)
+		objectPath = c.getObjectPath(c.ResourceRootPath, serviceInstance, name)
 	} else {
 		objectPath = c.ResourceRootPath
 	}
